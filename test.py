@@ -18,16 +18,13 @@ import torch
 from torch import nn
 from torch.nn import NLLLoss
 from torch.utils.tensorboard import SummaryWriter
-from torch.optim.lr_scheduler import LambdaLR
 import argparse, os, pickle
-from tqdm import tqdm
 import numpy as np
 import itertools
 import multiprocessing
 from shutil import copyfile
 from pathlib import Path
 import itertools
-import shutil
 import json
 import math
 
@@ -294,8 +291,6 @@ if __name__ == '__main__':
     parser.add_argument('--wd_rl', type=float, default=0.05)
     parser.add_argument('--drop_rate', type=float, default=0.3)
     parser.add_argument('--devices', nargs='+', type=int, default=[0])
-    parser.add_argument('--dataset_root', type=str,
-                        default="./data/features/ctx_features_dataset")
     parser.add_argument('--annotations', type=str,
                         default="./annotations")
     parser.add_argument('--obj_file', type=str,
