@@ -1,4 +1,4 @@
-name: kmcn
+name: SHENet
 channels:
   - pytorch
   - defaults
