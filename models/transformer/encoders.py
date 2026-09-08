@@ -1,12 +1,3 @@
-
-
-
-
-
-
-
-
-
 import sys
 
 from torch.nn import functional as F
@@ -26,7 +17,6 @@ class GridGlobalRelationEnhancer(nn.Module):
         self.inter_channel = in_channel // cha_ratio
         self.inter_spatial = in_spatial // spa_ratio
 
-        # 可学习的位置编码，注入几何先验
         grid_size = int(in_spatial ** 0.5)
         self.pos_embed = nn.Parameter(torch.randn(1, self.inter_channel, grid_size, grid_size))
 
@@ -76,7 +66,6 @@ class GridGlobalRelationEnhancer(nn.Module):
             theta_xs = self.theta_spatial(x)
             phi_xs = self.phi_spatial(x)
 
-            # 注入几何先验：将可学习位置编码加到 theta/phi 特征上
             theta_xs = theta_xs + self.pos_embed
             phi_xs = phi_xs + self.pos_embed
 
@@ -111,106 +100,6 @@ class GridRelationModule(nn.Module):
         out = self.pwff(out)
         out = out.permute(0, 2, 1).reshape(b, c, h, w)
         return out 
-
-
-class GridSpatialRelationEnhancer(nn.Module):
-    def __init__(self, n_layers=3, d_in=512, d_model=512, dropout=0.1):
-        super(GridSpatialRelationEnhancer, self).__init__()
-        self.d_model = d_model
-        self.layers = nn.ModuleList(
-            [GridRelationModule(
-                in_channel=d_model,
-                in_spatial=49,  # 7x7 grid
-                use_spatial=True,
-                use_channel=False,
-                cha_ratio=4,
-                spa_ratio=4,  # 改为 4，这样 inter_spatial=49//4=12
-                down_ratio=4,  # 改为 4，这样 num_channel_s//down_ratio=13//4=3
-                d_model=d_model,
-                d_ff=2048,
-                dropout=dropout
-            ) for _ in range(n_layers)]
-        )
-
-    def forward(self, grid):
-        b, l, d = grid.shape
-        h, w = 7, 7  # 7x7 grid
-        out = grid.view(b, h, w, d).permute(0, 3, 1, 2)
-        for layer in self.layers:
-            out = layer(out)
-        out = out.permute(0, 2, 3, 1).reshape(b, h*w, d)
-        return out
-
-
-class SemanticEnhancer(nn.Module):
-    def __init__(self, d_model=512, num_semantic_groups=5, use_global_semantic=True,
-                 use_adaptive_fusion=True, l2_weight=0.0, noise_std=0.0):
-        super(SemanticEnhancer, self).__init__()
-        self.num_semantic_groups = num_semantic_groups
-        self.d_model = d_model
-        self.use_global_semantic = use_global_semantic
-        self.use_adaptive_fusion = use_adaptive_fusion
-        self.l2_weight = l2_weight
-        self.noise_std = noise_std
-
-        self.semantic_embeddings = nn.Parameter(torch.randn(num_semantic_groups, d_model))
-
-        if self.use_adaptive_fusion:
-            self.adaptive_weight = nn.Linear(d_model * 2, 1)
-
-        self.semantic_updater = nn.Linear(d_model, d_model)
-
-        self.semantic_enhancer = nn.Sequential(
-            nn.Linear(d_model, d_model),
-            nn.ReLU(),
-            nn.Dropout(0.1),
-            nn.Linear(d_model, d_model)
-        )
-
-    def forward(self, x, mask=None):
-        """
-        x: bs, seq_len, d_model
-        mask: bs, 1, 1, seq_len (可选)
-        """
-        bs, seq_len, d_model = x.shape
-
-        aux_loss = (self.l2_weight * torch.mean(self.semantic_embeddings ** 2)) if self.training else torch.zeros(1, device=x.device)
-
-        semantics = self.semantic_embeddings.unsqueeze(0).unsqueeze(0)  # 1, 1, K, d
-        if self.training and self.noise_std > 0:
-            noise = torch.randn_like(semantics) * self.noise_std
-            semantics = semantics + noise
-
-        x_expanded = x.unsqueeze(2)  # bs, seq_len, 1, d
-        similarity = torch.cosine_similarity(x_expanded, semantics, dim=-1)  # bs, seq_len, K
-
-        attention_weights = F.softmax(similarity, dim=1)  # bs, seq_len, K
-
-        if mask is not None:
-            mask = mask.squeeze(1).squeeze(1)  # bs, seq_len
-            attention_weights = attention_weights * mask.unsqueeze(-1)
-            attention_weights = attention_weights / (attention_weights.sum(dim=1, keepdim=True) + 1e-8)
-
-        aggregated_semantics = torch.bmm(attention_weights.transpose(1, 2), x)  # bs, K, d
-
-        semantic_update = self.semantic_updater(aggregated_semantics)
-        updated_semantics = self.semantic_embeddings.unsqueeze(0) + 0.1 * semantic_update
-
-        semantic_out = torch.bmm(attention_weights, updated_semantics)  # bs, seq_len, d
-        semantic_out = self.semantic_enhancer(semantic_out)
-
-        if self.use_global_semantic:
-            global_semantic = torch.mean(x, dim=1, keepdim=True)  # bs, 1, d
-            semantic_out = semantic_out + global_semantic
-
-        if self.use_adaptive_fusion:
-            f = torch.cat((x, semantic_out), dim=-1)  # bs, seq_len, 2*d
-            semantic_weight = torch.sigmoid(self.adaptive_weight(f))  # bs, seq_len, 1
-            enhanced_x = x + semantic_weight * semantic_out
-        else:
-            enhanced_x = x + semantic_out
-
-        return enhanced_x, aggregated_semantics, aux_loss
 
 
 class HierarchicalSemanticEnhancer(nn.Module):
@@ -370,10 +259,6 @@ class MultiLevelEncoder(nn.Module):
             self.hse_object = HierarchicalSemanticEnhancer(d_model, num_semantic_groups, num_layers=N,
                                                            l2_weight=l2_weight, noise_std=noise_std)
 
-        if self.use_hse_grid:
-            self.hse_grid = HierarchicalSemanticEnhancer(d_model, num_semantic_groups, num_layers=N,
-                                                         l2_weight=l2_weight, noise_std=noise_std)
-
         if self.use_gse:
             self.gse = GridSpatialRelationEnhancer(n_layers=gse_num_layers, d_model=d_model, dropout=dropout)
 
@@ -393,8 +278,6 @@ class MultiLevelEncoder(nn.Module):
         object_mask = (torch.sum(torch.abs(object), -1) == self.padding_idx).unsqueeze(1).unsqueeze(1)  # (b_s, 1, 1, seq_len)
         grid_mask = (torch.sum(torch.abs(grid), -1) == self.padding_idx).unsqueeze(1).unsqueeze(1)
 
-        # 应用创新模块
-        # 1. 网格空间关系增强器
         if self.use_gse:
             grid = self.gse(grid)
         
@@ -404,10 +287,6 @@ class MultiLevelEncoder(nn.Module):
         if self.use_hse:
             object, aux_loss_obj, semantic_object = self.hse_object(object, object_mask)
             aux_loss = aux_loss_obj
-
-        if self.use_hse_grid:
-            grid, aux_loss_grid, semantic_grid = self.hse_grid(grid, grid_mask)
-            aux_loss = aux_loss + aux_loss_grid
 
         out_object, out_grid = object, grid
 
