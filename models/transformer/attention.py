@@ -107,7 +107,6 @@ class MultiHeadAttention(Module):
         return out
 
 
-# 带有biase的MHA运算，在encoder中使用
 
 class ScaledDotProductAttentionWithBias(nn.Module):
     '''
@@ -220,7 +219,6 @@ class MultiHeadAttentionWithBias(Module):
         return out
 
 
-#带有隐藏项的MHA运算，用在decoder的CA中
 class ScaledDotProductAttentionWithHidden(nn.Module):
     '''
     Scaled dot-product attention
