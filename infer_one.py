@@ -9,7 +9,7 @@ from data import TextField
 
 import numpy as np
 
-IMG_IDS = [480408,487534,487659,487688]
+IMG_IDS = [1243]
 device = torch.device('cuda:0')
 
 # 加载 GT captions
