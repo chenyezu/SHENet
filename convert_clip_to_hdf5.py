@@ -4,7 +4,7 @@ from pathlib import Path
 from tqdm import tqdm 
 
 # 设置输入和输出路径
-input_dir = "/home/sda1/cyz/KMCN-main/OpenAI-CLIP-Feature-main/clip_grid_448/"  # CLIP特征提取的输出目录
+input_dir = "/home/sda1/cyz/SHENet-main/OpenAI-CLIP-Feature-main/clip_grid_448/"  # CLIP特征提取的输出目录
 output_file = "./CLIP_features.hdf5"  # 输出的HDF5文件路径
 
 def convert_clip_to_hdf5(input_dir, output_file): 
