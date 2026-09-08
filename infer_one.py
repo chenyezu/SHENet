@@ -9,12 +9,12 @@ from data import TextField
 
 import numpy as np
 
-IMG_IDS = [1554, 999, 2473, 72, 36]
+IMG_IDS = [480408,487534,487659,487688]
 device = torch.device('cuda:0')
 
 # 加载 GT captions
 gt_captions = {}
-for split in ['captions_train2014.json', 'captions_val2014.json']:
+for split in ['captions_train2014_tokenized.json', 'captions_val2014_tokenized.json']:
     data = json.load(open(f'./annotations/{split}', 'r'))
     for ann in data['annotations']:
         img_id = ann['image_id']
@@ -30,7 +30,8 @@ obj_file = h5py.File('./data/features/vinvl.hdf5', 'r')
 grid_file = h5py.File('./data/features/CLIP_features.hdf5', 'r')
 
 encoder = TransformerEncoder(3, 0, attention_module=ScaledDotProductAttention,
-                             use_osce=True)
+                             use_gse=True, use_hse=True, num_semantic_groups=5,
+                             cvf_mode='cross_view')
 decoder = TransformerDecoder(len(text_field.vocab), 54, 3, text_field.vocab.stoi['<pad>'])
 projector = Projector(f_obj=2048, f_grid=2048, f_out=512, drop_rate=0.1)
 model = Transformer(bos_idx=text_field.vocab.stoi['<bos>'],
