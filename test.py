@@ -279,11 +279,10 @@ def build_cider_train(ref_caps_train, stoi_for_cider):
 
 
 if __name__ == '__main__':
-    parser.add_argument('--exp_name', type=str, default='SHENet')
+    parser.add_argument('--exp_name', type=str, default='shenet')
     parser.add_argument('--batch_size', type=int, default=50)
     parser.add_argument('--bs_reduct', type=int, default=5)
     parser.add_argument('--workers', type=int, default=6)
-    parser.add_argument('--topk', type=int, default=8)
     parser.add_argument('--warmup', type=int, default=10000)
     parser.add_argument('--lr_xe', type=float, default=1e-4)
     parser.add_argument('--lr_rl', type=float, default=5e-6)
