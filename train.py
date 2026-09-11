@@ -261,7 +261,7 @@ if __name__ == '__main__':
     parser.add_argument('--lr_xe', type=float, default=1e-4)
     parser.add_argument('--lr_rl', type=float, default=5e-6)
     parser.add_argument('--wd_rl', type=float, default=0.05)
-    parser.add_argument('--drop_rate', type=float, default=0.3)
+    parser.add_argument('--drop_rate', type=float, default=0.1)
     parser.add_argument('--devices', nargs='+', type=int, default=[0])
     parser.add_argument('--annotations', type=str, default="./annotations")
     parser.add_argument('--obj_file', type=str, default="./data/features/vinvl.hdf5")
