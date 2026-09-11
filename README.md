@@ -7,6 +7,8 @@
 - [Environment setup](#environment-setup)
 - [Data Preparation](#data-preparation)
 - [Training](#training)
+- [Evaluation](#evaluation)
+- [Acknowledgements](#acknowledgements)
 
 ## Environment setup
 Clone the repository and create a conda environment:
@@ -21,8 +23,6 @@ conda activate shenet
 
 ## Training
 
-## Training
-
 Run `python train.py` with the following arguments:
 
 | Argument | Description | Default |
@@ -31,7 +31,6 @@ Run `python train.py` with the following arguments:
 | `--batch_size` | Batch size for training | `50` |
 | `--bs_reduct` | Batch size reduction factor | `5` |
 | `--workers` | Number of dataloader workers | `6` |
-| `--topk` | Top‑k selection | `8` |
 | `--warmup` | Warmup training steps | `10000` |
 | `--lr_xe` | Learning rate for XE loss | `1e‑4` |
 | `--lr_rl` | Learning rate for RL loss | `5e‑6` |
@@ -43,3 +42,10 @@ To train the model, you can run the following command:
 ```bash
 python train.py --devices 0 --dataset_root ./data/features/ctx_features_dataset --obj_file ./data/features/vinvl.hdf5 --grid_file ./data/features/CLIP_features.hdf5 --batch_size 50 --lr_xe 1e-4
 ```
+## Evaluation
+Run python test.py to evaluate the model using the following arguments:
+```bash
+python test.py --exp_name "shenet" --fname ckpt_best_test.pth --resume_best --devices 0 --batch_size 50
+```
+## Acknowledgements
+Thanks for the original annotations prepared by  [M<sup>2</sup>](https://github.com/aimagelab/meshed-memory-transformer), and effective visual feature extraction from [openai-clip-feature](https://github.com/jianjieluo/OpenAI-CLIP-Feature) and [VinVL](https://github.com/michelecafagna26/vinvl-visualbackbone) .
