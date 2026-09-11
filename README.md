@@ -11,7 +11,7 @@
 ## Environment setup
 Clone the repository and create a conda environment:
 ```bash
-conda env create -f environment.yaml
+conda env create -f environment.yml
 conda activate shenet
 ```
 
@@ -41,11 +41,5 @@ Run `python train.py` with the following arguments:
 
 To train the model, you can run the following command:
 ```bash
-python train.py \
-  --devices 0 \
-  --dataset_root ./data/features/ctx_features_dataset \
-  --obj_file ./data/features/vinvl.hdf5 \
-  --grid_file ./data/features/CLIP_features.hdf5 \
-  --batch_size 50 \
-  --lr_xe 1e-4
+python train.py --devices 0 --dataset_root ./data/features/ctx_features_dataset --obj_file ./data/features/vinvl.hdf5 --grid_file ./data/features/CLIP_features.hdf5 --batch_size 50 --lr_xe 1e-4
 ```
