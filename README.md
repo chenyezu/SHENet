@@ -21,23 +21,31 @@ conda activate shenet
 
 ## Training
 
-Run `python train.py` using the following arguments:
+## Training
 
-| Argument | Possible values |
-|----------|-----------------|
-| `--exp_name` | Experiment name |
-| `--batch_size` | Batch size (default: 50) |
-| `--workers` | Number of workers, accelerate model training in the xe stage. |
-| `--head` | Number of heads (default: 8) |
-| `--resume_last` | If used, the training will be resumed from the last checkpoint. |
-| `--resume_best` | If used, the training will be resumed from the best checkpoint. |
-| `--features_path` | Path to visual features file (h5py) |
-| `--annotation_folder` | Path to annotations |
-| `--num_clusters` | Number of pseudo regions |
+Run `python train.py` with the following arguments:
 
-For example, to train the model, run the following command:
+| Argument | Description | Default |
+|----------|-------------|---------|
+| `--exp_name` | Experiment name | `shenet` |
+| `--batch_size` | Batch size for training | `50` |
+| `--bs_reduct` | Batch size reduction factor | `5` |
+| `--workers` | Number of dataloader workers | `6` |
+| `--topk` | Top‑k selection | `8` |
+| `--warmup` | Warmup training steps | `10000` |
+| `--lr_xe` | Learning rate for XE loss | `1e‑4` |
+| `--lr_rl` | Learning rate for RL loss | `5e‑6` |
+| `--wd_rl` | Weight decay for RL optimizer | `0.05` |
+| `--drop_rate` | Dropout rate | `0.1` |
+| `--devices` | GPU device ids, support multiple gpus | `[0]` |
+
+To train the model, you can run the following command:
 ```bash
-python train_transformer.py --exp_name S2 --batch_size 50 --m 40 --head 8 --features_path /path/to/features
+python train.py \
+  --devices 0 \
+  --dataset_root ./data/features/ctx_features_dataset \
+  --obj_file ./data/features/vinvl.hdf5 \
+  --grid_file ./data/features/CLIP_features.hdf5 \
+  --batch_size 50 \
+  --lr_xe 1e-4
 ```
-
-or just run:
