@@ -1,6 +1,7 @@
 # SHENet: Spatial relation-aware Hierarchical semantic Enhancement Network for Image Captioning😄
 ![visitors](https://komarev.com/ghpvc/?username=chenyezu&color=green&label=welcome!)
-<img width="1255" height="557" alt="论文_框架图" src="./images/论文_框架图.png" />
+<img width="1255" height="557" alt="fig_overview" src="./images/fig_overview.png" />
+<!--<img width="1255" height="557" alt="论文_框架图" src="./images/论文_框架图.png" />-->
 <img width="1515" height="615" alt="论文_GSA" src="./images/论文_GSA.png" />
 
 ## Table of Contents
